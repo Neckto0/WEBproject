@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ prod.name }}</h1>
+<div class="text-start" style="display: flex; text-align: left">
+    <div><img width="1000px" height="1000px" src="/static/{{ prod.picture }}"></div>
+    <div>
+        <div style="font-size: 50px">{{ prod.price }} RUB</div>
+        <div>{{ prod.quality }}</div>
+    </div>
+</div>
+
+{% endblock %}
