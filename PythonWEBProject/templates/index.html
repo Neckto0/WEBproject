@@ -1,19 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Записи в блоге</h1>
-<div style="width: 700px" class="table_container">
+<div style="display: flex">
+<div style="width: 300px">
+    <h2>Фильтры</h2>
+</div>
+<div style="width: 800px" class="table_container">
+    <h1>Каталог</h1>
     {% for products in prod %}
     <a href="/product/{{ products.id }}" style="text-decoration:none; color:black" tabindex="0" role="table">
         <div style="display: flex">
             <div><img height="400" width="400" src="static/{{ products.picture }}"></div>
-            <div style="width: 200px">
-                <div>{{ types[products.type] }} {{ products.name }}</div>
-                <div></div>
+            <div style="width: 400px">
+                <div style="font-size: 25px">{{ types[products.type] }} {{ products.name }}</div>
+            <div style="width: 20px"> </div>
             </div>
-            <div style="width: 150px; font-size: 30px">{{ products.price }} ₽</div>
+            <div style="width: 200px; font-size: 30px">{{ products.price }} ₽</div>
         </div>
     </a>
     {% endfor %}
 </div>
+</div>
+
 {% endblock %}

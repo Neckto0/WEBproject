@@ -8,38 +8,42 @@
         {{ form.job_title.label }}<br>
         {{ form.job_title(class="form-control") }}<br>
         {% for errors in form.job_title.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ errors }}
-            </p>
-        {% endfor %}
+    <p class="alert alert-danger" role="alert">
+        {{ errors }}
+    </p>
+    {% endfor %}
     </p>
     <p>
         {{ form.team_leader_id.label }}<br>
         {{ form.team_leader_id(class="form-control") }}<br>
         {% for errors in form.team_leader_id.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ errors }}
-            </p>
-        {% endfor %}
+    <p class="alert alert-danger" role="alert">
+        {{ errors }}
+    </p>
+    {% endfor %}
     </p>
     <p>
         {{ form.work_size.label }}<br>
         {{ form.work_size(class="form-control") }}<br>
         {% for errors in form.work_size.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ errors }}
-            </p>
-        {% endfor %}
+    <p class="alert alert-danger" role="alert">
+        {{ errors }}
+    </p>
+    {% endfor %}
     </p>
     <p>
         {{ form.collaborators.label }}<br>
         {{ form.collaborators(class="form-control") }}<br>
         {% for errors in form.collaborators.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ errors }}
-            </p>
-        {% endfor %}
+    <p class="alert alert-danger" role="alert">
+        {{ errors }}
     </p>
+    {% endfor %}
+    </p>
+    <div class="form-group">
+        <label for="exampleFormControlFile1">Example file input</label>
+        <input type="file" class="form-control-file" id="exampleFormControlFile1">
+    </div>
     <p>{{ form.is_finished }} {{ form.is_finished.label }}</p>
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
