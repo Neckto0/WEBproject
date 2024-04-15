@@ -2,16 +2,74 @@
 
 {% block content %}
 <div style="display: flex">
-<div style="width: 300px">
+<div style="width: 400px">
     <h2>Фильтры</h2>
+    <div style="height: 70px">
+        <h6>Цена</h6>
+        <div style="display: flex">
+            {{ form.min }} {{ form.max }}
+        </div>
+    </div>
+    <div class="container text-left">
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.fork }}</div>
+            <div class="col-5">{{ form.fork.label }}</div>
+        </div>
+        <div class="row">
+            <div class="col-1">{{ form.breakers }}</div>
+            <div class="col-5">{{ form.breakers.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.wheels }}</div>
+            <div class="col-5">{{ form.wheels.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.frame }}</div>
+            <div class="col-5">{{ form.frame.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.saddle }}</div>
+            <div class="col-5">{{ form.saddle.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.saddle_post }}</div>
+            <div class="col-7">{{ form.saddle_post.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.grips }}</div>
+            <div class="col-5">{{ form.grips.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.steering_colm }}</div>
+            <div class="col-5">{{ form.steering_colm.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.transmission }}</div>
+            <div class="col-5">{{ form.transmission.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.stem }}</div>
+            <div class="col-5">{{ form.stem.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.bar }}</div>
+            <div class="col-5">{{ form.bar.label }}</div>
+        </div>
+        <div class="row">
+            <div style="width: 30px" class="col-1">{{ form.pedals }}</div>
+            <div class="col-5">{{ form.pedals.label }}</div>
+        </div>
+    </div>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    {{ message }}
 </div>
-<div style="width: 800px" class="table_container">
+<div style="width: 900px" class="table_container">
     <h1>Каталог</h1>
     {% for products in prod %}
     <a href="/product/{{ products.id }}" style="text-decoration:none; color:black" tabindex="0" role="table">
         <div style="display: flex">
             <div><img height="400" width="400" src="static/{{ products.picture }}"></div>
-            <div style="width: 400px">
+            <div style="width: 600px">
                 <div style="font-size: 25px">{{ types[products.type] }} {{ products.name }}</div>
             <div style="width: 20px"> </div>
             </div>

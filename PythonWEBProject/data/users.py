@@ -17,6 +17,9 @@ class User(SqlAlchemyBase, SerializerMixin, UserMixin):
                               index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
+    is_active = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    code = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    basket = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

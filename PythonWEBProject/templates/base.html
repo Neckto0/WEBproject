@@ -9,7 +9,7 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-light bg-light">
+    <nav class="navbar navbar-dark bg-dark">
         <a class="navbar-brand" href="/">Главная</a>
         {% if current_user.id == 1 %}
         <a class="navbar-brand" href="/addJob">Add new job</a>
@@ -17,12 +17,12 @@
         <a></a>
         {% endif %}
         {% if current_user.is_authenticated %}
-        <div class="dropdown">
+        <div class="btn-group dropleft">
             <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                data-toggle="dropdown" >{{ current_user.name }}</a>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">Action</a>
-                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="/edit">Изменить аккаунт</a>
+                <a class="dropdown-item" href="/delete/{{ current_user.id }}">Удалить аккаунт</a>
                 <a class="dropdown-item" href="/logout">Выход</a>
             </div>
         </div>
