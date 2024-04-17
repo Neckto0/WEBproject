@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Корзина</h1>
+<h5>{{ message }}</h5>
+{% for products in prod %}
+    <a title="{{ type[products.type] }} {{ products.name }}" href="/product/{{ products.id }}"
+       style="text-decoration:none; color:black; margin: 0 auto" tabindex="0" role="table">
+        <div style="display: flex">
+            <div><img height="400" width="400" src="static/{{ products.picture }}"></div>
+            <div style="width: 600px; font-size: 25px; flex-direction:column">
+                {{ type[products.type] }} {{ products.name }}
+                <a title="add to card" href="/deletefromcard/{{ products.id }}" class="btn btn-danger">Удалить из
+                    корзины</a>
+            </div>
+            <div style="width: 200px; font-size: 30px">{{ products.price }} ₽</div>
+        </div>
+    </a>
+{% endfor %}
+{% endblock %}

@@ -1,9 +1,8 @@
 from Login import LoginForm
 from data import db_session
 from data.users import User
-from data.jobs import Jobs
 from flask import render_template, redirect, Flask
-from flask_login import login_user, LoginManager, login_required, logout_user
+from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from Register import RegisterForm
 from JobNew import NewJob
 from EditJob import EJobs
@@ -11,6 +10,7 @@ from data.product import Products
 from data.turbo import Turbo
 from filters import Filter
 from Code import Codes
+from cart import Card
 from random import randint
 import sqlite3
 import smtplib
@@ -60,21 +60,41 @@ def login():
 @app.route('/', methods=["GET", "POST"])
 def start_window():
     filter_form = Filter()
-    a = {"fork": "Вилка", "breakers": "Тормоза", "wheels": "Колеса", "frame": "Рама",
-         "saddle": "Седло", "saddle_post": "Подседельный штырь", "grips": "Грипсы",
-         "steering_colm": "Рулевая колонка", "transmission": "Трансмисия", "stem": "Вынос",
-         "bar": "Руль", "pedals": "Педали"}
+    a = {1: filter_form.fork.data, 2: filter_form.breakers.data, 3: filter_form.wheels.data,
+         4: filter_form.frame.data, 5: filter_form.saddle.data, 6: filter_form.saddle_post.data,
+         7: filter_form.grips.data, 8: filter_form.steering_colm.data,
+         9: filter_form.transmission.data, 10: filter_form.stem.data, 11: filter_form.bar.data,
+         12: filter_form.pedals.data}
     db_sess = db_session.create_session()
     turbo = db_sess.query(Turbo).all()
     prod = db_sess.query(Products).all()
     types = {name.id: name.name for name in turbo}
-    if filter_form.validate_on_submit():
+    if filter_form.submit.data:
         s = []
+        prod2 = []
         for typ in a.keys():
-            eval(f"""if form.{typ}:
-                            s.append(a[{typ}])""")
-            prod = db_sess.query(Products).filter(Products.type in s).all()
-        return render_template('index.html', prod=prod, types=types, form=filter_form, message=a)
+            if a[typ]:
+                s.append(typ)
+        if filter_form.max.data or filter_form.data:
+            for i in s:
+                prod1 = db_sess.query(Products).filter(Products.type == i and
+                                                       filter_form.max.data > Products.price > filter_form.min.data).all()
+                for kop in prod1:
+                    prod2.append(kop)
+        else:
+            for i in s:
+                prod1 = db_sess.query(Products).filter(Products.type == i).all()
+                for kop in prod1:
+                    prod2.append(kop)
+        if all(not element for i, element in a.items()):
+            if filter_form.max.data or filter_form.min.data:
+                print(int(filter_form.max.data) >= 20000 >= int(filter_form.min.data))
+                prod1 = db_sess.query(Products).filter(
+                    int(filter_form.max.data) >= Products.price).all()
+                return render_template('index.html', prod=prod1, types=types, form=filter_form)
+            else:
+                return render_template('index.html', prod=prod, types=types, form=filter_form)
+        return render_template('index.html', prod=prod2, types=types, form=filter_form)
     return render_template('index.html', prod=prod, types=types, form=filter_form)
 
 
@@ -146,26 +166,80 @@ def code():
     return render_template("Code.html", form=form_code, email=user.email)
 
 
-@app.route("/addJob", methods=["GET", "POST"])
-def newJob():
+@app.route("/adddet", methods=["GET", "POST"])
+def newdet():
     form = NewJob()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        if db_sess.query(Jobs).filter(Jobs.job == form.job_title.data).first():
-            return render_template("addJob.html", title="Add new job",
+        if db_sess.query(Products).filter(Products == form.name.data).first():
+            return render_template("addJob.html", title="Add new detal",
                                    form=form,
-                                   message="Такая работа уже создана")
-        job = Jobs(
-            team_leader=form.team_leader_id.data,
-            job=form.job_title.data,
-            work_size=form.work_size.data,
-            collaborators=form.collaborators.data,
-            is_finished=form.is_finished.data
+                                   message="Такая деталь уже создана")
+        prod = Products(
+            name=form.det_titl.data,
+            type=form.type.data,
+            quality=form.qual.data,
+            price=form.price.data,
+            picture=form.picture.data,
+            about=form.about.data
+
         )
-        db_sess.add(job)
+        db_sess.add(prod)
         db_sess.commit()
         return redirect("/")
-    return render_template("addJob.html", title="Add new job", form=form)
+    return render_template("addJob.html", title="Add new product", form=form)
+
+
+@app.route('/deletefromcard/<int:id>')
+def delfromcard(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    s = [int(i) for i in user.basket.split(', ')]
+    del s[s.index(id)]
+    if s:
+        user.basket = ", ".join([str(i) for i in s])
+    else:
+        user.basket = None
+    db_sess.commit()
+    return redirect('/cart')
+
+
+@app.route("/cart", methods=["GET", "POST"])
+def cart():
+    db_sess = db_session.create_session()
+    turbo = db_sess.query(Turbo).all()
+    us = db_sess.query(User).filter(User.id == current_user.id).first()
+    products_in_card = []
+    if us.basket:
+        s = [i for i in us.basket.split(", ")]
+    else:
+        s = []
+    db_sess.commit()
+    form = Card()
+    types = {name.id: name.name for name in turbo}
+    if s:
+        print(s)
+        products_in_card = [db_sess.query(Products).filter(Products.id == int(i)).first() for i in s]
+        return render_template("cart.html", db=db_sess, user=User,
+                               form=form, prod=products_in_card, type=types, spis=s)
+    return render_template("cart.html", db=db_sess, user=User,
+                           form=form, prod=products_in_card, type=types, spis=s,
+                           message="Добавьте что-нибудь в корзину, чтобы она не была пуста")
+
+
+@app.route("/addtocard/<int:id>", methods=["GET", "POST"])
+def addcard(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    if user.basket:
+        s = [int(i) for i in user.basket.split(", ")]
+        s.append(id)
+        print(s)
+        user.basket = ", ".join([str(i) for i in s])
+    else:
+        user.basket = id
+    db_sess.commit()
+    return redirect("/")
 
 
 @app.route("/product/<int:number_of_list>")
