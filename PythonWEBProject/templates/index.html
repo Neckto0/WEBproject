@@ -63,22 +63,23 @@
         <p title="Показать">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
         {{ message }}
     </form>
-    <div class="table_container">
+    <div class="table_container" style="position: relative; left: 50px">
         <h1>Каталог</h1>
         {% for products in prod %}
-        <a title="{{ types[products.type] }} {{ products.name }}" href="/product/{{ products.id }}"
-           style="text-decoration:none; color:black" tabindex="0" role="table">
-            <div style="display: flex">
-                <div><img height="400" width="400" src="static/{{ products.picture }}"></div>
-                <div style="width: 600px; font-size: 25px; flex-direction:column">
-                    {{ types[products.type] }} {{ products.name }}
-                    <a title="add to card" href="/addtocard/{{ products.id }}" class="btn btn-primary">Добавить в
-                    корзину</a>
+        <div style="display:flex" id="{{ products.id }}">
+            <a title="{{ types[products.type] }} {{ products.name }}" href="/product/{{ products.id }}"
+               style="text-decoration:none; color:black" tabindex="0" role="table">
+                <div style="display: flex">
+                    <div><img height="400" width="400" src="static/{{ products.picture }}"></div>
+                    <div style="position: relative; left: 50px; width: 400px; font-size: 25px; flex-direction:column">
+                        {{ types[products.type] }} {{ products.name }}
+                    </div>
+                    <div style="position: relative; left: 50px; width: 250px; font-size: 30px">{{ products.price }} ₽</div>
                 </div>
-                <div style="width: 200px; font-size: 30px">{{ products.price }} ₽</div>
-            </div>
-
-        </a>
+            </a>
+            <a style="height: 40px; position: relative; left: -50px; top: 5px" title="add to card"
+               href="/addtocard/{{ products.id }}" class="btn btn-primary">В корзину</a>
+        </div>
         {% endfor %}
     </div>
 </div>

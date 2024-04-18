@@ -171,7 +171,7 @@ def newdet():
     form = NewJob()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        if db_sess.query(Products).filter(Products == form.name.data).first():
+        if db_sess.query(Products).filter(Products == form.det_titl.data).first():
             return render_template("addJob.html", title="Add new detal",
                                    form=form,
                                    message="Такая деталь уже создана")
@@ -248,6 +248,11 @@ def edit(number_of_list):
     db_sess = db_session.create_session()
     prod = db_sess.query(Products).filter(Products.id == number_of_list).first()
     return render_template("editJob.html", title="About", form=form, prod=prod)
+
+
+@app.route("/profile")
+def prof():
+    return render_template("profile.html")
 
 
 @log_mangr.user_loader
