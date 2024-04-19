@@ -7,6 +7,8 @@
     <div>
         <div style="font-size: 50px">{{ prod.price }} RUB</div>
         <div>{{ prod.quality }}</div>
+        <div style="font-size: 20px; position: relative; top: 5px; left: 10px" >{{ prod.about }}</div>
+
     </div>
     <a style="height:40px; position: relative; left: 50px; top: 20px" title="add to card"
        href="/addtocard/{{ prod.id }}" class="btn btn-primary">В корзину</a>

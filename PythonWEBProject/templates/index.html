@@ -7,7 +7,7 @@
         <div style="height: 70px">
             <h6>Цена</h6>
             <div style="display: flex">
-                {{ form.min }} {{ form.max }}
+                <div  >{{ form.min }}</div> {{ form.max }}
             </div>
         </div>
         <div class="container text-left">
@@ -63,18 +63,20 @@
         <p title="Показать">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
         {{ message }}
     </form>
-    <div class="table_container" style="position: relative; left: 50px">
+    <div class="table_container" style="position: relative; left: 100px">
         <h1>Каталог</h1>
         {% for products in prod %}
         <div style="display:flex" id="{{ products.id }}">
             <a title="{{ types[products.type] }} {{ products.name }}" href="/product/{{ products.id }}"
                style="text-decoration:none; color:black" tabindex="0" role="table">
                 <div style="display: flex">
-                    <div><img height="400" width="400" src="static/{{ products.picture }}"></div>
+                    <div><img height="300" width="300" src="static/{{ products.picture }}"></div>
                     <div style="position: relative; left: 50px; width: 400px; font-size: 25px; flex-direction:column">
-                        {{ types[products.type] }} {{ products.name }}
+                        {{ types[products.type] }} {{ products.name }}<br>
+                        <div style="position: relative; top: 10px; left: 10px; font-size: 20px">Оценка: {{ products.quality }}</div>
                     </div>
-                    <div style="position: relative; left: 50px; width: 250px; font-size: 30px">{{ products.price }} ₽</div>
+                    <div style="position: relative; left: 50px; width: 250px; font-size: 30px">{{ products.price }} ₽
+                    </div>
                 </div>
             </a>
             <a style="height: 40px; position: relative; left: -50px; top: 5px" title="add to card"
