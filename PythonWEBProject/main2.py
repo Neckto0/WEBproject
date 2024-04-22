@@ -1,7 +1,7 @@
 from Login import LoginForm
-from data import db_session
+from data import db_session, users_api, prod_api
 from data.users import User
-from flask import render_template, redirect, Flask
+from flask import render_template, redirect, Flask, Blueprint, jsonify
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from Register import RegisterForm
 from JobNew import NewJob
@@ -19,6 +19,12 @@ app = Flask(__name__)
 log_mangr = LoginManager()
 log_mangr.init_app(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
+prod_bl_print = Blueprint(
+    "products",
+    __name__,
+    template_folder="templates"
+)
 
 
 def create():
@@ -252,6 +258,8 @@ def edit(number_of_list):
 
 @app.route("/profile")
 def prof():
+    db_sess = db_session.create_session()
+    users = db_sess.query(User).all()
     return render_template("profile.html")
 
 
@@ -264,6 +272,8 @@ def load_user(user_id):
 def main():
     db_session.global_init("db/blogs.db")
     create()
+    app.register_blueprint(users_api.us_bl_print)
+    app.register_blueprint(prod_api.prod_bl_print)
     app.run()
 
 
