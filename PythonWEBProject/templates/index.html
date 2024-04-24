@@ -81,6 +81,10 @@
             </a>
             <a style="height: 40px; position: relative; left: -50px; top: 5px" title="add to card"
                href="/addtocard/{{ products.id }}" class="btn btn-primary">В корзину</a>
+            {% if current_user.id == 1 %}
+            <a style="height: 40px; position: relative; left: -150px; top: 60px" title="del from catalog"
+               href="/Delprod/{{ products.id }}" class="btn btn-danger">Удалить товар из каталога</a>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

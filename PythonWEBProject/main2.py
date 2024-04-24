@@ -1,24 +1,28 @@
-from Login import LoginForm
+from forms.Login import LoginForm
 from data import db_session, users_api, prod_api
 from data.users import User
-from flask import render_template, redirect, Flask, Blueprint, jsonify
+from flask import render_template, redirect, Flask, Blueprint, send_file, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
-from Register import RegisterForm
-from JobNew import NewJob
-from EditJob import EJobs
+from forms.Register import RegisterForm
+from forms.JobNew import NewJob
+from forms.EditJob import EJobs
 from data.product import Products
 from data.turbo import Turbo
-from filters import Filter
-from Code import Codes
-from cart import Card
+from forms.filters import Filter
+from forms.Code import Codes
+from forms.cart import Card
 from random import randint
 import sqlite3
 import smtplib
+import os
+
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 log_mangr = LoginManager()
 log_mangr.init_app(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config['UPLOAD'] = os.path.join("static", 'Picture')
 
 prod_bl_print = Blueprint(
     "products",
@@ -121,6 +125,17 @@ def deletea(id):
     return redirect("/")
 
 
+@app.route("/Delprod/<int:id>")
+def deleteb(id):
+    db_sess = db_session.create_session()
+    pop = db_sess.query(Products).filter(Products.id == id).first()
+    if os.path.exists(f"static/{pop.picture}"):
+        os.remove(f"static/{pop.picture}")
+    db_sess.delete(pop)
+    db_sess.commit()
+    return redirect("/")
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     form = RegisterForm()
@@ -186,10 +201,11 @@ def newdet():
             type=form.type.data,
             quality=form.qual.data,
             price=form.price.data,
-            picture=form.picture.data,
-            about=form.about.data
 
         )
+        file = request.files["pic"]
+        prod.picture = f"Picture/{file.filename}"
+        file.save(os.path.join(app.config['UPLOAD'], secure_filename(file.filename)))
         db_sess.add(prod)
         db_sess.commit()
         return redirect("/")

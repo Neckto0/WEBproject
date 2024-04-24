@@ -15,4 +15,4 @@ class Products(SqlAlchemyBase, SerializerMixin, UserMixin):
     quality = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     price = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     picture = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    about = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    about = sqlalchemy.Column(sqlalchemy.LargeBinary, nullable=True)
