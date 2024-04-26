@@ -17,7 +17,7 @@ def get_prod():
     types = db_sess.query(Turbo).all()
     return jsonify(
         {
-            'products': [prod.to_dict(only=("id", "type", "name", "quality", "price", "picture", "about"))
+            'products': [prod.to_dict(only=("id", "type", "name", "quality", "price", "about"))
                          for prod in prods],
             'types': [typ.to_dict(only=("id", "name")) for typ in types]
         }
