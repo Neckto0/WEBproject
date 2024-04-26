@@ -3,8 +3,21 @@
 {% block content %}
 
 <h1>Профиль</h1>
-<div>{{ current_user.email }}</div>
-<div>{{ current_user.name }}</div>
-<div>{{ current_user.about }}</div>
+<form style="width: 500px; margin: 0 auto; position: relative; top: 50px" action="" method="post">
+    <p>
+        {{ form.email.label }}<br>
+        {{ form.email(class="form-control", type="email", value=current_user.email) }}
+    </p>
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name(class="form-control", value=current_user.name) }}
+    </p>
+    <p>
+        {{ form.about.label }}<br>
+        {% set f = form.about.process_data(current_user.about) %}
+        {{ form.about(class="form-control") }}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+</form>
 
 {% endblock %}

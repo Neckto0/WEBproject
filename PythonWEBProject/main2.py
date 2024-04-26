@@ -1,7 +1,7 @@
 from forms.Login import LoginForm
 from data import db_session, users_api, prod_api
 from data.users import User
-from flask import render_template, redirect, Flask, Blueprint, send_file, request
+from flask import render_template, redirect, Flask, Blueprint, request
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from forms.Register import RegisterForm
 from forms.JobNew import NewJob
@@ -11,6 +11,9 @@ from data.turbo import Turbo
 from forms.filters import Filter
 from forms.Code import Codes
 from forms.cart import Card
+from forms.profile import Profile
+from forms.recovery import Recov
+from forms.EditPassword import EditPass
 from random import randint
 import sqlite3
 import smtplib
@@ -55,6 +58,12 @@ def login():
         db_sess.delete(pop)
         db_sess.commit()
 
+    user2 = db_sess.query(User).filter(User.code != 0).all()
+    for user in user2:
+        ust = db_sess.query(User).filter(User.id == user.id).first()
+        ust.code = 0
+        db_sess.commit()
+
     form = LoginForm()
     if form.validate_on_submit():
         user = db_sess.query(User).filter(User.email == form.email.data).first()
@@ -85,12 +94,17 @@ def start_window():
         for typ in a.keys():
             if a[typ]:
                 s.append(typ)
-        if filter_form.max.data or filter_form.data:
+        if int(filter_form.max.data) != 0 or int(filter_form.min.data) != 0:
             for i in s:
                 prod1 = db_sess.query(Products).filter(Products.type == i and
-                                                       filter_form.max.data > Products.price > filter_form.min.data).all()
+                                                       int(filter_form.max.data) >= Products.price >= int(filter_form.min.data)).all()
                 for kop in prod1:
-                    prod2.append(kop)
+                    if int(filter_form.max.data) != 0:
+                        if kop.type == i and int(filter_form.max.data) >= kop.price >= int(filter_form.min.data):
+                            prod2.append(kop)
+                    else:
+                        if kop.type == i and kop.price >= int(filter_form.min.data):
+                            prod2.append(kop)
         else:
             for i in s:
                 prod1 = db_sess.query(Products).filter(Products.type == i).all()
@@ -98,13 +112,18 @@ def start_window():
                     prod2.append(kop)
         if all(not element for i, element in a.items()):
             if filter_form.max.data or filter_form.min.data:
-                print(int(filter_form.max.data) >= 20000 >= int(filter_form.min.data))
-                prod1 = db_sess.query(Products).filter(
-                    int(filter_form.max.data) >= Products.price).all()
-                return render_template('index.html', prod=prod1, types=types, form=filter_form)
+                prods = db_sess.query(Products).all()
+                if int(filter_form.max.data) != 0:
+                    prod1 = [m for m in prods if int(filter_form.max.data) >= m.price >= int(filter_form.min.data)]
+                else:
+                    prod1 = [m for m in prods if m.price >= int(filter_form.min.data)]
+                return render_template('index.html', prod=prod1, types=types, form=filter_form,
+                                       message=f"найдено {len(prod1)} результатов")
             else:
-                return render_template('index.html', prod=prod, types=types, form=filter_form)
-        return render_template('index.html', prod=prod2, types=types, form=filter_form)
+                return render_template('index.html', prod=prod, types=types, form=filter_form,
+                                       message=f"найдено {len(prod)} результатов")
+        return render_template('index.html', prod=prod2, types=types, form=filter_form,
+                               message=f"найдено {len(prod2)} результатов")
     return render_template('index.html', prod=prod, types=types, form=filter_form)
 
 
@@ -240,7 +259,6 @@ def cart():
     form = Card()
     types = {name.id: name.name for name in turbo}
     if s:
-        print(s)
         products_in_card = [db_sess.query(Products).filter(Products.id == int(i)).first() for i in s]
         return render_template("cart.html", db=db_sess, user=User,
                                form=form, prod=products_in_card, type=types, spis=s)
@@ -256,7 +274,6 @@ def addcard(id):
     if user.basket:
         s = [int(i) for i in user.basket.split(", ")]
         s.append(id)
-        print(s)
         user.basket = ", ".join([str(i) for i in s])
     else:
         user.basket = id
@@ -272,11 +289,85 @@ def edit(number_of_list):
     return render_template("editJob.html", title="About", form=form, prod=prod)
 
 
-@app.route("/profile")
-def prof():
+@app.route("/buy")
+def buy():
     db_sess = db_session.create_session()
-    users = db_sess.query(User).all()
-    return render_template("profile.html")
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    prod = db_sess.query(Products).all()
+    s = [m for m in prod if m.id in [int(i) for i in user.basket.split(", ")]]
+    spi = [f'{m[0]} {m[1]}RUB\n' for m in [[i.name, i.price] for i in s]]
+    sum_all = sum([i.price for i in s])
+    for pro in s:
+        pro.product_quantity -= 1
+        db_sess.commit()
+    smtpObj = smtplib.SMTP("smtp.gmail.com", 587)
+    smtpObj.starttls()
+    smtpObj.login("site0mtb@gmail.com", "xuhd ycre lmdp pvoz")
+    smtpObj.sendmail("site0mtb@gmail.com", user.email,
+                     '\n'.join(spi) + f"\nTotal: {sum_all} RUB")
+    smtpObj.quit()
+    user.basket = None
+    db_sess.commit()
+    return render_template("Buy.html")
+
+
+@app.route("/profile", methods=["GET", "POST"])
+def prof():
+    form = Profile()
+    if form.submit.data:
+        db_sess = db_session.create_session()
+        users = db_sess.query(User).filter(User.id == current_user.id).first()
+        users.name = form.name.data
+        users.about = form.about.data
+        db_sess.commit()
+        return redirect("/profile")
+    return render_template("profile.html", form=form)
+
+
+@app.route('/recovery', methods=['GET', 'POST'])
+def recovery():
+    form = Recov()
+    if form.submit.data:
+        db_sess = db_session.create_session()
+        users = [i.email for i in db_sess.query(User).all()]
+        if form.email.data in users:
+            user = db_sess.query(User).filter(User.email == form.email.data).first()
+            user.code = randint(100000, 999999)
+            db_sess.commit()
+            return redirect("/recovery/next")
+        return render_template("recovery.html", form=form, message="Такого пользователя нет")
+    return render_template('recovery.html', form=form)
+
+
+@app.route("/recovery/next", methods=["GET", "POST"])
+def nextrev():
+    form = Codes()
+    db_sess = db_session.create_session()
+    us = db_sess.query(User).filter(User.code != 0).first()
+    smtpObj = smtplib.SMTP("smtp.gmail.com", 587)
+    smtpObj.starttls()
+    smtpObj.login("site0mtb@gmail.com", "xuhd ycre lmdp pvoz")
+    smtpObj.sendmail("site0mtb@gmail.com", us.email, f"Hello, this your code {us.code}")
+    if form.submit.data:
+        if form.code.data == str(us.code):
+            return redirect("/recovery/edit")
+        return render_template("Code.html", form=form, email=us.email, message="Код неверный")
+    return render_template("Code.html", form=form, email=us.email)
+
+
+@app.route("/recovery/edit", methods=["GET", "POST"])
+def editaccount():
+    form = EditPass()
+    if form.submit.data:
+        if form.password.data != form.password_ag.data:
+            print(form.password.data, form.password_ag.data)
+            return render_template("editPassword.html", form=form, message="Пароли не совпадают")
+        db_sess = db_session.create_session()
+        us = db_sess.query(User).filter(User.code != 0).first()
+        us.set_password(form.password.data)
+        db_sess.commit()
+        return redirect("/login")
+    return render_template("editPassword.html", form=form)
 
 
 @log_mangr.user_loader
