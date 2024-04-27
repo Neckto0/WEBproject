@@ -1,13 +1,6 @@
 from forms.Login import LoginForm
-from data import db_session, users_api, prod_api
-from data.users import User
-from flask import render_template, redirect, Flask, Blueprint, request
-from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from forms.Register import RegisterForm
-from forms.JobNew import NewJob
-from forms.EditJob import EJobs
-from data.product import Products
-from data.turbo import Turbo
+from forms.NewDET import NewDET
 from forms.filters import Filter
 from forms.Code import Codes
 from forms.cart import Card
@@ -15,11 +8,19 @@ from forms.profile import Profile
 from forms.recovery import Recov
 from forms.EditPassword import EditPass
 from forms.quantity import Quant
-from random import randint
-import smtplib
-import os
 
+from data import db_session, users_api, prod_api
+from data.users import User
+from data.product import Products
+from data.turbo import Turbo
+
+import smtplib
+from flask import render_template, redirect, Flask, Blueprint, request
+from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
+
+from random import randint
+import os
 
 app = Flask(__name__)
 log_mangr = LoginManager()
@@ -212,7 +213,7 @@ def code():  # Проверка кода с почты
 
 @app.route("/adddet", methods=["GET", "POST"])
 def newdet():  # Добавление новой детали
-    form = NewJob()
+    form = NewDET()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         if db_sess.query(Products).filter(Products == form.det_titl.data).first():
@@ -272,7 +273,7 @@ def cart():  # Корзина
 
 
 @app.route("/addtocard/<int:id>", methods=["GET", "POST"])
-def addcard(id): # Добавление в корзину
+def addcard(id):  # Добавление в корзину
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     if user.basket:
@@ -286,20 +287,19 @@ def addcard(id): # Добавление в корзину
 
 
 @app.route("/product/<int:number_of_list>", methods=["GET", "POST"])
-def prod(number_of_list): # О продукте
-    form = EJobs()
+def prod(number_of_list):  # О продукте
     form2 = Quant()
     db_sess = db_session.create_session()
     prod = db_sess.query(Products).filter(Products.id == number_of_list).first()
     if form2.submit.data:
         prod.product_quantity = form2.quant.data
         db_sess.commit()
-        return render_template("editJob.html", title="About", form=form, form2=form2, prod=prod)
-    return render_template("editJob.html", title="About", form=form, form2=form2, prod=prod)
+        return render_template("editJob.html", title="About", form2=form2, prod=prod)
+    return render_template("editJob.html", title="About", form2=form2, prod=prod)
 
 
 @app.route("/buy")
-def buy(): # Покупка
+def buy():  # Покупка
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     prod = db_sess.query(Products).all()
@@ -321,7 +321,7 @@ def buy(): # Покупка
 
 
 @app.route("/profile", methods=["GET", "POST"])
-def prof(): # Профиль
+def prof():  # Профиль
     form = Profile()
     if form.submit.data:
         db_sess = db_session.create_session()
@@ -334,7 +334,7 @@ def prof(): # Профиль
 
 
 @app.route('/recovery', methods=['GET', 'POST'])
-def recovery(): # Восстановление пароля
+def recovery():  # Восстановление пароля
     form = Recov()
     if form.submit.data:
         db_sess = db_session.create_session()
@@ -349,7 +349,7 @@ def recovery(): # Восстановление пароля
 
 
 @app.route("/recovery/next", methods=["GET", "POST"])
-def nextrev(): # Код для восстановления пороля
+def nextrev():  # Код для восстановления пороля
     form = Codes()
     db_sess = db_session.create_session()
     us = db_sess.query(User).filter(User.code != 0).first()
@@ -365,7 +365,7 @@ def nextrev(): # Код для восстановления пороля
 
 
 @app.route("/recovery/edit", methods=["GET", "POST"])
-def editaccount(): # Изменение пароля
+def editaccount():  # Изменение пароля
     form = EditPass()
     if form.submit.data:
         if form.password.data != form.password_ag.data:
@@ -379,12 +379,12 @@ def editaccount(): # Изменение пароля
 
 
 @log_mangr.user_loader
-def load_user(user_id): # Загрузка пользователя
+def load_user(user_id):  # Загрузка пользователя
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
 
-def main(): # Запуск
+def main():  # Запуск
     db_session.global_init("db/blogs.db")
     create()
     app.register_blueprint(users_api.us_bl_print)

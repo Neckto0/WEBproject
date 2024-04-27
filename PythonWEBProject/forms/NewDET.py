@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import TextAreaField, SubmitField, FileField, SelectField
 
 
-class NewJob(FlaskForm):
+class NewDET(FlaskForm):
     det_titl = TextAreaField("Name of the new part")
     type = SelectField("Type", choices=[(1, "Вилка"), (2, "Тормоза"), (3, "Колеса"),
                                         (4, "Рама"), (5, "Седло"), (6, "Подседельный штырь"),
