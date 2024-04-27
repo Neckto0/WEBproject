@@ -2,16 +2,27 @@
 
 {% block content %}
 <h1>{{ prod.name }}</h1>
-<div class="text-start" style="display: flex; margin: 0 auto">
+<div class="text-start" style="width: device-width; display: flex; margin: 0 auto">
     <div><img width="900px" height="900px" src="/static/{{ prod.picture }}"></div>
     <div style="width: 500px">
         <div style="font-size: 50px">{{ prod.price }} RUB</div>
         <div>{{ prod.quality }}</div>
-        <div style="font-size: 20px; position: relative; top: 5px; left: 10px" >{{ prod.about }}</div>
+        <div style="font-size: 20px; position: relative; top: 5px; left: 10px">{{ prod.about }}</div>
 
     </div>
     <a style="height:40px; position: relative; left: 50px; top: 20px" title="add to card"
        href="/addtocard/{{ prod.id }}" class="btn btn-primary">В корзину</a>
+    {% if current_user.is_authenticated and current_user.id == 1 %}
+    <div style="position: relative; left: 15%">
+        <form action="" method="post">
+            <p>
+                {{ form2.quant.label }}
+                {{ form2.quant(class="form-control", value=prod.product_quantity) }}
+            </p>
+            <p>{{ form.submit(class="btn btn-primary", type="submit") }}</p>
+        </form>
+    </div>
+    {% endif %}
 </div>
 
 {% endblock %}

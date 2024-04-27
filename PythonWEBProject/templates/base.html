@@ -14,8 +14,6 @@
         <a class="navbar-brand" href="/">Главная</a>
         {% if current_user.id == 1 %}
         <a class="navbar-brand" href="/adddet">Add new detal</a>
-        {% else %}
-        <a></a>
         {% endif %}
         {% if current_user.is_authenticated %}
         <div>

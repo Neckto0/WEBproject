@@ -14,8 +14,8 @@ from forms.cart import Card
 from forms.profile import Profile
 from forms.recovery import Recov
 from forms.EditPassword import EditPass
+from forms.quantity import Quant
 from random import randint
-import sqlite3
 import smtplib
 import os
 
@@ -34,23 +34,26 @@ prod_bl_print = Blueprint(
 )
 
 
-def create():
-    if len(db_session.create_session().query(Turbo).all()) != 12:
+def create():  # Создание определённого количества и типов деталей
+    db_sess = db_session.create_session()
+    if len(db_sess.query(Turbo).all()) <= 13:
         s = ["Вилка", "Тормоза", "Колеса", "Рама", "Седло", "Подседельный штырь", "Грипсы",
-             "Рулевая колонка", "Трансмисия", "Вынос", "Руль", "Педали"]
+             "Рулевая колонка", "Трансмисия", "Вынос", "Руль", "Педали", "Велосипед в сборе"]
 
         for zn in s:
             tur = Turbo()
-            db_sess = db_session.create_session()
             tur.name = zn
             db_sess.add(tur)
             db_sess.commit()
     else:
-        sqlite3.connect("db/data21.db").cursor().execute("DELETE FROM Turbo WHERE id > 12")
+        pop = db_sess.query(Turbo).filter(Turbo.id > 13).all()
+        for op in pop:
+            db_sess.delete(op)
+            db_sess.commit()
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login():  # Вход в аккаунт(ещё проверка не активировоных аккаунтов)
     db_sess = db_session.create_session()
     user1 = db_sess.query(User).filter(User.is_active == 0).all()
     for user in user1:
@@ -77,7 +80,7 @@ def login():
 
 
 @app.route('/', methods=["GET", "POST"])
-def start_window():
+def start_window():  # Главная страница
     filter_form = Filter()
     a = {1: filter_form.fork.data, 2: filter_form.breakers.data, 3: filter_form.wheels.data,
          4: filter_form.frame.data, 5: filter_form.saddle.data, 6: filter_form.saddle_post.data,
@@ -97,7 +100,8 @@ def start_window():
         if int(filter_form.max.data) != 0 or int(filter_form.min.data) != 0:
             for i in s:
                 prod1 = db_sess.query(Products).filter(Products.type == i and
-                                                       int(filter_form.max.data) >= Products.price >= int(filter_form.min.data)).all()
+                                                       int(filter_form.max.data) >= Products.price >= int(
+                    filter_form.min.data)).all()
                 for kop in prod1:
                     if int(filter_form.max.data) != 0:
                         if kop.type == i and int(filter_form.max.data) >= kop.price >= int(filter_form.min.data):
@@ -129,13 +133,13 @@ def start_window():
 
 @app.route('/logout')
 @login_required
-def logout():
+def logout():  # Выход из аккаунта
     logout_user()
     return redirect("/")
 
 
 @app.route("/delete/<int:id>")
-def deletea(id):
+def deletea(id):  # Удаление аккаунта
     logout_user()
     db_sess = db_session.create_session()
     pop = db_sess.query(User).filter(User.id == id).first()
@@ -145,7 +149,7 @@ def deletea(id):
 
 
 @app.route("/Delprod/<int:id>")
-def deleteb(id):
+def deleteb(id):  # Удаление продукта
     db_sess = db_session.create_session()
     pop = db_sess.query(Products).filter(Products.id == id).first()
     if os.path.exists(f"static/{pop.picture}"):
@@ -156,7 +160,7 @@ def deleteb(id):
 
 
 @app.route('/register', methods=['GET', 'POST'])
-def reqister():
+def reqister():  # Регистрация
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -185,7 +189,7 @@ def reqister():
 
 
 @app.route("/conf", methods=["POST", "GET"])
-def code():
+def code():  # Проверка кода с почты
     form_code = Codes()
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.is_active == 0).first()
@@ -207,7 +211,7 @@ def code():
 
 
 @app.route("/adddet", methods=["GET", "POST"])
-def newdet():
+def newdet():  # Добавление новой детали
     form = NewJob()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -232,7 +236,7 @@ def newdet():
 
 
 @app.route('/deletefromcard/<int:id>')
-def delfromcard(id):
+def delfromcard(id):  # Удаление из корзины
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     s = [int(i) for i in user.basket.split(', ')]
@@ -246,7 +250,7 @@ def delfromcard(id):
 
 
 @app.route("/cart", methods=["GET", "POST"])
-def cart():
+def cart():  # Корзина
     db_sess = db_session.create_session()
     turbo = db_sess.query(Turbo).all()
     us = db_sess.query(User).filter(User.id == current_user.id).first()
@@ -268,7 +272,7 @@ def cart():
 
 
 @app.route("/addtocard/<int:id>", methods=["GET", "POST"])
-def addcard(id):
+def addcard(id): # Добавление в корзину
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     if user.basket:
@@ -281,16 +285,21 @@ def addcard(id):
     return redirect("/")
 
 
-@app.route("/product/<int:number_of_list>")
-def edit(number_of_list):
+@app.route("/product/<int:number_of_list>", methods=["GET", "POST"])
+def prod(number_of_list): # О продукте
     form = EJobs()
+    form2 = Quant()
     db_sess = db_session.create_session()
     prod = db_sess.query(Products).filter(Products.id == number_of_list).first()
-    return render_template("editJob.html", title="About", form=form, prod=prod)
+    if form2.submit.data:
+        prod.product_quantity = form2.quant.data
+        db_sess.commit()
+        return render_template("editJob.html", title="About", form=form, form2=form2, prod=prod)
+    return render_template("editJob.html", title="About", form=form, form2=form2, prod=prod)
 
 
 @app.route("/buy")
-def buy():
+def buy(): # Покупка
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     prod = db_sess.query(Products).all()
@@ -312,7 +321,7 @@ def buy():
 
 
 @app.route("/profile", methods=["GET", "POST"])
-def prof():
+def prof(): # Профиль
     form = Profile()
     if form.submit.data:
         db_sess = db_session.create_session()
@@ -325,7 +334,7 @@ def prof():
 
 
 @app.route('/recovery', methods=['GET', 'POST'])
-def recovery():
+def recovery(): # Восстановление пароля
     form = Recov()
     if form.submit.data:
         db_sess = db_session.create_session()
@@ -340,7 +349,7 @@ def recovery():
 
 
 @app.route("/recovery/next", methods=["GET", "POST"])
-def nextrev():
+def nextrev(): # Код для восстановления пороля
     form = Codes()
     db_sess = db_session.create_session()
     us = db_sess.query(User).filter(User.code != 0).first()
@@ -356,11 +365,10 @@ def nextrev():
 
 
 @app.route("/recovery/edit", methods=["GET", "POST"])
-def editaccount():
+def editaccount(): # Изменение пароля
     form = EditPass()
     if form.submit.data:
         if form.password.data != form.password_ag.data:
-            print(form.password.data, form.password_ag.data)
             return render_template("editPassword.html", form=form, message="Пароли не совпадают")
         db_sess = db_session.create_session()
         us = db_sess.query(User).filter(User.code != 0).first()
@@ -371,12 +379,12 @@ def editaccount():
 
 
 @log_mangr.user_loader
-def load_user(user_id):
+def load_user(user_id): # Загрузка пользователя
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
 
-def main():
+def main(): # Запуск
     db_session.global_init("db/blogs.db")
     create()
     app.register_blueprint(users_api.us_bl_print)

@@ -7,7 +7,8 @@
         <div style="height: 70px">
             <h6>Цена</h6>
             <div style="display: flex">
-                <div  >{{ form.min(value=0) }}</div> {{ form.max(value=0) }}
+                <div>{{ form.min(value=0) }}</div>
+                {{ form.max(value=0) }}
             </div>
         </div>
         <div class="container text-left">
@@ -73,14 +74,22 @@
                     <div><img height="300" width="300" src="static/{{ products.picture }}"></div>
                     <div style="position: relative; left: 50px; width: 400px; font-size: 25px; flex-direction:column">
                         {{ types[products.type] }} {{ products.name }}<br>
-                        <div style="position: relative; top: 10px; left: 10px; font-size: 20px">Оценка: {{ products.quality }}</div>
+                        <div style="position: relative; top: 10px; left: 10px; font-size: 20px">Оценка: {{
+                            products.quality }}
+                        </div>
                     </div>
                     <div style="position: relative; left: 50px; width: 250px; font-size: 30px">{{ products.price }} ₽
                     </div>
                 </div>
             </a>
+            {% if products.product_quantity != 0 %}
             <a style="height: 40px; position: relative; left: -50px; top: 5px" title="add to card"
                href="/addtocard/{{ products.id }}" class="btn btn-primary">В корзину</a>
+            {% else %}
+            <a style="height: 40px; position: relative; left: -50px; top: 5px; color: currentColor;
+                        cursor: not-allowed; opacity: 0.5; text-decoration: none;" title="add to card"
+               href="/addtocard/{{ products.id }}" class="btn btn-primary">В корзину</a>
+            {% endif %}
             {% if current_user.id == 1 %}
             <a style="height: 40px; position: relative; left: -150px; top: 60px" title="del from catalog"
                href="/Delprod/{{ products.id }}" class="btn btn-danger">Удалить товар из каталога</a>
